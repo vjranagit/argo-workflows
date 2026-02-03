@@ -3,18 +3,26 @@ package workflow
 // TemplateBuilder provides helper functions for creating common template types.
 // Unlike Hera's decorators, these are explicit constructor functions.
 
+// TemplateOption is a functional option for template-level configuration.
+type TemplateOption func(*Template)
+
 // ContainerTemplate creates a container template.
-func ContainerTemplate(name string, opts ...ContainerOption) Template {
-	container := &Container{}
+func ContainerTemplate(name string, opts ...interface{}) Template {
+	tmpl := Template{
+		Name:      name,
+		Container: &Container{},
+	}
 
 	for _, opt := range opts {
-		opt(container)
+		switch o := opt.(type) {
+		case ContainerOption:
+			o(tmpl.Container)
+		case TemplateOption:
+			o(&tmpl)
+		}
 	}
 
-	return Template{
-		Name:      name,
-		Container: container,
-	}
+	return tmpl
 }
 
 // ContainerOption is a functional option for container configuration.
@@ -57,17 +65,22 @@ func WithResources(resources *Resources) ContainerOption {
 
 // ScriptTemplate creates a script template.
 // Different from Hera's @script decorator - this is explicit.
-func ScriptTemplate(name string, opts ...ScriptOption) Template {
-	script := &Script{}
+func ScriptTemplate(name string, opts ...interface{}) Template {
+	tmpl := Template{
+		Name:   name,
+		Script: &Script{},
+	}
 
 	for _, opt := range opts {
-		opt(script)
+		switch o := opt.(type) {
+		case ScriptOption:
+			o(tmpl.Script)
+		case TemplateOption:
+			o(&tmpl)
+		}
 	}
 
-	return Template{
-		Name:   name,
-		Script: script,
-	}
+	return tmpl
 }
 
 // ScriptOption is a functional option for script configuration.
@@ -111,14 +124,14 @@ func WithScriptResources(resources *Resources) ScriptOption {
 }
 
 // WithInputs adds inputs to a template.
-func WithInputs(inputs *Inputs) func(*Template) {
+func WithInputs(inputs *Inputs) TemplateOption {
 	return func(t *Template) {
 		t.Inputs = inputs
 	}
 }
 
 // WithOutputs adds outputs to a template.
-func WithOutputs(outputs *Outputs) func(*Template) {
+func WithOutputs(outputs *Outputs) TemplateOption {
 	return func(t *Template) {
 		t.Outputs = outputs
 	}

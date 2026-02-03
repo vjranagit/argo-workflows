@@ -33,7 +33,9 @@ type Template struct {
 	Container *Container     `json:"container,omitempty"`
 	Script    *Script        `json:"script,omitempty"`
 	DAG       *DAG           `json:"dag,omitempty"`
-	Steps     *[][]StepGroup `json:"steps,omitempty"`
+	Steps          *[][]StepGroup  `json:"steps,omitempty"`
+	RetryStrategy  *RetryStrategy  `json:"retryStrategy,omitempty"`
+	Timeout        *TimeoutPolicy  `json:"timeout,omitempty"`
 }
 
 // Container defines a container template.
